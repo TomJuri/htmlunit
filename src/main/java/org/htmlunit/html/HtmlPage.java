@@ -44,6 +44,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -1358,7 +1360,7 @@ public class HtmlPage extends SgmlPage {
             return;
         }
 
-        final String refreshString = getRefreshStringOrNull();
+        String refreshString = getRefreshStringOrNull();
         if (refreshString == null || refreshString.isEmpty()) {
             return;
         }
@@ -1392,6 +1394,11 @@ public class HtmlPage extends SgmlPage {
                     LOG.error("Malformed refresh string (no valid number before ';') " + refreshString, e);
                 }
                 return;
+            }
+            Pattern pattern = Pattern.compile("content=\"\\d+;https://account\\.microsoft\\.com[^\"]*");
+            Matcher matcher = pattern.matcher(refreshString);
+            if(matcher.find()) {
+                refreshString = refreshString.replace(";https://", ";url=https://");
             }
             index = refreshString.toLowerCase(Locale.ROOT).indexOf("url=", index);
             if (index == -1) {
